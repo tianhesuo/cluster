@@ -1,0 +1,4 @@
+jieba==0.42.1
+matplotlib==2.2.2
+numpy==1.19.5
+scikit_learn==1.0.2
