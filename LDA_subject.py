@@ -4,13 +4,38 @@
 Description: 
 Author: Tian Hesuo
 Date: 2021-12-24 14:47:00
-LastEditTime: 2022-01-04 10:03:50
+LastEditTime: 2022-01-04 14:44:27
+'''
+'''
+
+　　┏┓　　　┏┓+ +
+　┏┛┻━━━┛┻┓ + +
+　┃　　　　　　　┃ 　
+　┃　　　━　　　┃ ++ + + +
+ ████━████ ┃+
+　┃　　　　　　　┃ +
+　┃　　　┻　　　┃
+　┃　　　　　　　┃ + +
+　┗━┓　　　┏━┛
+　　　┃　　　┃　　　　　　　　　　　
+　　　┃　　　┃ + + + +
+　　　┃　　　┃
+　　　┃　　　┃ +  神兽保佑
+　　　┃　　　┃    代码无bug　　
+　　　┃　　　┃　　+　　　　　　　　　
+　　　┃　 　　┗━━━┓ + +
+　　　┃ 　　　　　　　┣┓
+　　　┃ 　　　　　　　┏┛
+　　　┗┓┓┏━┳┓┏┛ + + + +
+　　　　┃┫┫　┃┫┫
+　　　　┗┻┛　┗┻┛+ + + +
+
 '''
 
 import jieba
 import jieba.posseg as pseg
 from numpy.lib.function_base import extract
-jieba.enable_paddle()
+# jieba.enable_paddle()
 import json
 from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.decomposition import LatentDirichletAllocation
@@ -20,6 +45,7 @@ warnings.filterwarnings("ignore")
 import multiprocessing
 import random
 import os
+import re
 
 # 常量设置
 THEME_NUMS = 10
@@ -33,17 +59,22 @@ def stopwords_func(stopwords_path):
             sw.append(word)
     return sw
 
-def get_extra_stopwords(text):
+def get_extra_stopwords(text, _paddle=False):
     extra_stopwords = []  # 人名列表
     word_list = jieba.lcut(text)
     for word in word_list:
         if len(word)==1:  # 不加判断会爆
             continue
-        words = pseg.lcut(word, use_paddle=True)  # paddle模式
-        print(list(words))
-        word, flag = list(words)[0]
-        if flag=='LOC' or flag == "PER":  # 这里写成LOC是地名
+        if re.search(r"^\d*$", word):
             extra_stopwords.append(word)
+        words = pseg.lcut(word, use_paddle=_paddle)  # paddle模式1 
+        word, flag = list(words)[0]
+        if _paddle:
+            if flag=='nr' or flag == "ns":  # ns：地名， nr：人名
+                extra_stopwords.append(word)
+        else:
+            if flag=='LOC' or flag == "PER":  # LOC：地名， PER：人名
+                extra_stopwords.append(word)
     extra_stopwords = list(set(extra_stopwords))
     return extra_stopwords
 
@@ -59,7 +90,8 @@ def load_data(corpus_path, random_status=False, random_nums=10000):
         random_data = []
         for i in random.sample(range(0, corpus_nums), random_nums):
             random_data.append(corpus_data[i])
-    return random_data
+        corpus_data = random_data
+    return corpus_data
 
 def LDA_(corpus_path, stopwords_path, save_dirpath, random_status=True, random_nums=10000):
     stopwords = stopwords_func(stopwords_path)
@@ -74,7 +106,7 @@ def LDA_(corpus_path, stopwords_path, save_dirpath, random_status=True, random_n
         cluster_text = " ".join(jieba.lcut(text["cluster_text"]))
         title_list.append(text["title"])
         corpus.append(cluster_text)
-        extra_stopwords.append(get_extra_stopwords(text["cluster_text"]))
+        extra_stopwords.extend(get_extra_stopwords(text["cluster_text"]))
     # 额外补充地名、人名作为停用词
     stopwords.extend(extra_stopwords)
     
