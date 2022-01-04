@@ -1,4 +1,4 @@
 .idea
 outputs/
 *__pycache__
-
+data/*.json

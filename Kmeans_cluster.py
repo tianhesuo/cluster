@@ -184,7 +184,7 @@ def Kmeans_cluster(tfidf_fit, word_dict, title_list, cluster_words_path):
 
 if __name__ == "__main__":
     corpus_path = "data/gw_cluster_head.json"
-    stopwords_path = "/home/tianhesuo/work/knowledge_graph/cluster_algorithm/data/stopwords.txt"
+    stopwords_path = "/home/tianhesuo/work/knowledge_graph/cluster/data/stopwords.txt"
     cluster_words_path = "outputs/Kmeans/cluster_keywords.txt"
     sw = stopwords(stopwords_path)
     tfidf_fit, word_dict, title_list = build_corpus(corpus_path, sw)
